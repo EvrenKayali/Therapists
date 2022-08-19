@@ -1,0 +1,53 @@
+version: "3.2"
+services:
+  sql-server-db:
+    container_name: sql-server-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    networks:
+      - es-net
+    environment:
+      SA_PASSWORD: "p@ssw0rd"
+      ACCEPT_EULA: "Y"
+  elasticsearch:
+    container_name: es-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+  kibana:
+    container_name: kb-container
+    image: docker.elastic.co/kibana/kibana:7.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es-container:9200
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+  logstash:
+    image: docker.elastic.co/logstash/logstash-oss:6.2.2
+    volumes:
+      # - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/libs:/usr/share/logstash/libs
+      - ./logstash/lastrun:/root/.logstash_jdbc_last_run
+    ports:
+      - "5610:5610"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch
+networks:
+  es-net:
+    driver: bridge
