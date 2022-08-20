@@ -22,7 +22,7 @@ public class PopulateDataController : ControllerBase
         return HttpUtility.HtmlDecode(text.Replace("\r\n", "").Replace("\r", "").Replace("\n", "").Trim());
     }
 
-    [HttpGet]
+    [HttpPost]
     public async Task<ActionResult> Get()
     {
         var url = "https://www.evimdekipsikolog.com/";
