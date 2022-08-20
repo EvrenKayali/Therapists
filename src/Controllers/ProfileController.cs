@@ -20,7 +20,7 @@ public class ProfileController : ControllerBase
     [HttpGet]
     public IEnumerable<ProfileModel> Get()
     {
-        var profiles = _db.Profiles.Select(p => new ProfileModel
+        var profiles = _db.Profiles.Take(50).Select(p => new ProfileModel
         {
             Id = p.Id,
             FullName = p.FullName,

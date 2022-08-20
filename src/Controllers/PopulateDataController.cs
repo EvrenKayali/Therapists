@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Therapists.Data;
 using Therapists.Data.Entites;
 using Therapists.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Therapists.Controllers;
 
@@ -42,6 +43,19 @@ public class PopulateDataController : ControllerBase
             .First(a => a.Attributes["class"] != null && a.Attributes["class"].Value == "badge-list")
             .Descendants("li").Select(d => CleanString(d.InnerText)).ToList()
         });
+
+        _db.Database.ExecuteSqlRaw(@"
+        DELETE FROM ExpertiseProfile
+
+        DELETE FROM Profiles
+        DBCC CHECKIDENT ('Profiles', RESEED, 0)
+
+        DELETE FROM Titles
+        DBCC CHECKIDENT ('Titles', RESEED, 0)
+
+        DELETE FROM Expertises
+        DBCC CHECKIDENT ('Expertises', RESEED, 0)
+        ");
 
         var allTitles = profiles
             .Select(p => p.Title)

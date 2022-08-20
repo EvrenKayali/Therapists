@@ -7,15 +7,15 @@ export const Therapistlist: React.FC = () => {
     refetchOnFocus: true,
   });
 
+  if (isLoading)
+    return (
+      <Box display="flex" justifyContent="center" mt="25%">
+        <CircularProgress size="5rem" />
+      </Box>
+    );
   return (
     <>
-      {isLoading && (
-        <Box display="flex" justifyContent="center" mt="25%">
-          <CircularProgress size="5rem" />
-        </Box>
-      )}
-
-      {Boolean(data?.length) ? (
+      {data?.length ? (
         <>
           {data?.map((p: any) => (
             <Box key={p.id}>

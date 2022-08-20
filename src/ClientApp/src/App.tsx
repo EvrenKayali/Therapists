@@ -15,7 +15,7 @@ function App() {
         }}
       >
         <Link to="/management">Management</Link>
-        <Link to="/">Search</Link>
+        <Link to="/">List</Link>
       </Box>
 
       <Routes>
