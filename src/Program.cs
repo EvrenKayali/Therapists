@@ -1,5 +1,3 @@
-
-
 using Microsoft.EntityFrameworkCore;
 using Therapists.Data;
 
@@ -21,13 +19,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
-
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
 
 app.MapControllerRoute(
     name: "default",

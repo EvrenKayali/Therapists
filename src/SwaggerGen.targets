@@ -1,0 +1,42 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="[6.4.0,]" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="[6.4.0,]" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="[6.4.0,]" />
+    <PackageReference Include="DateOnlyTimeOnly.AspNet.Swashbuckle" Version="[1.0.3,]" />
+  </ItemGroup>
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <GeneratedTsFile>src/generated/api.ts</GeneratedTsFile>
+    <SwaggerGenTSPackage>@rtk-query/codegen-openapi</SwaggerGenTSPackage>
+    <SwaggerGenTSPackageConfig>openapi-config.ts</SwaggerGenTSPackageConfig>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectDll Include="$(OutputPath)Therapists.dll" />
+    <ProjectSwaggerJSON Include="$(SpaRoot)src/generated/swagger.json" />
+    <RtkQueryCodegenOpenapi Include="$(SpaRoot)node_modules/$(SwaggerGenTSPackage)/lib/bin/cli.js" />
+  </ItemGroup>
+  <Target Name="SwaggerGenJSON" AfterTargets="AfterBuild" Inputs="$(SpaRoot);" Condition="!Exists(@(ProjectSwaggerJSON)) OR '$(_AssemblyTimestampBeforeCompile)'!='' Or &apos;$(_AssemblyTimestampBeforeCompile)&apos;!=&apos;$(_AssemblyTimestampAfterCompile)&apos;" Outputs="@(ProjectSwaggerJSON-&gt;&apos;%(FullPath)&apos;)">
+    <MakeDir Directories="$(SpaRoot)src/generated" />
+    <Exec Command="dotnet tool run swagger tofile --output %(ProjectSwaggerJSON.FullPath) @(ProjectDll) v1" EchoOff="true" YieldDuringToolExecution="True" StandardOutputImportance="Low" StandardErrorImportance="High" />
+  </Target>
+  <Target Name="SwaggerGenTS_NpmCheck" AfterTargets="AfterBuild" DependsOnTargets="SwaggerGenJSON" Inputs="@(ProjectSwaggerJSON);" Outputs="@(ProjectSwaggerJSON);@(RtkQueryCodegenOpenapi)">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install $(SwaggerGenTSPackage) -D --quiet" Condition="!Exists(%(RtkQueryCodegenOpenapi.FullPath))" EchoOff="true" YieldDuringToolExecution="True" ConsoleToMSBuild="true" StandardOutputImportance="Low" />
+  </Target>
+  <Target Name="SwaggerGenTS" AfterTargets="AfterBuild" DependsOnTargets="SwaggerGenTS_NpmCheck" Inputs="@(ProjectSwaggerJSON);@(RtkQueryCodegenOpenapi)" Outputs="$(SpaRoot)src/generated/api.ts">
+    <!-- Exec Command does not like the executable to be an Item, but can be a Property -->
+    <PropertyGroup>
+      <SwaggerGenTSCommand>%(RtkQueryCodegenOpenapi.FullPath)</SwaggerGenTSCommand>
+    </PropertyGroup>
+    <!-- StandardErrorImportance="Low" is set to hide false error about TS version, change to "High" to debug real errors -->
+    <Exec WorkingDirectory="$(SpaRoot)" Command="node --no-warnings $(SwaggerGenTSCommand) $(SwaggerGenTSPackageConfig)" EchoOff="false" YieldDuringToolExecution="false" StandardOutputImportance="Low" StandardErrorImportance="Low" />
+  </Target>
+  <Target Name="RunOnError">
+    <Delete Files="%(ProjectSwaggerJSON.FullPath)" />
+    <Delete Files="$(SpaRoot)$(GeneratedTsFile)" />
+  </Target>
+</Project>
