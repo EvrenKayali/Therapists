@@ -852,3 +852,4 @@ ClientServicesApp.Web/appsettings.Development.json
 mobiscroll.custom.zip
 ClientServicesApp.Web/ClientApp/src/mobiscroll
 ClientServicesApp.Web/ClientApp/src/mobiscroll-package
+logstash/libs/logstash_jdbc_last_run.yml
